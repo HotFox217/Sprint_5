@@ -1,67 +1,52 @@
-from selenium import webdriver
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 
-from locators import (
-    AUTH_BUTTON,
-    EMAIL_INPUT,
-    PASSWORD_INPUT,
-    LOGIN_BUTTON,
-    USER_AVATAR,
-    USER_NAME,
+from constants import BASE_URL, WAIT_TIMEOUT
+from data import (
+    EXISTING_USER_EMAIL,
+    EXISTING_USER_PASSWORD,
+    EXPECTED_USER_NAME,
 )
-
-
-BASE_URL = "https://qa-desk.education-services.ru/"
-
-USER_EMAIL = "testbest@gmail.com"
-USER_PASSWORD = "22882288"
+from locators import AuthLocators
 
 
 class TestLogin:
 
-    def setup_method(self):
-        self.driver = webdriver.Chrome()
-        self.driver.maximize_window()
+    def test_login_success(self, driver):
+        driver.get(BASE_URL)
 
-    def teardown_method(self):
-        self.driver.quit()
-
-    def test_login_success(self):
-        self.driver.get(BASE_URL)
-
-        WebDriverWait(self.driver, 10).until(
-            expected_conditions.element_to_be_clickable(AUTH_BUTTON)
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.element_to_be_clickable(
+                AuthLocators.AUTH_BUTTON
+            )
         ).click()
 
-        WebDriverWait(self.driver, 10).until(
-            expected_conditions.visibility_of_element_located(EMAIL_INPUT)
-        ).send_keys(USER_EMAIL)
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.visibility_of_element_located(
+                AuthLocators.EMAIL_INPUT
+            )
+        ).send_keys(EXISTING_USER_EMAIL)
 
-        WebDriverWait(self.driver, 10).until(
-            expected_conditions.visibility_of_element_located(PASSWORD_INPUT)
-        ).send_keys(USER_PASSWORD)
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.visibility_of_element_located(
+                AuthLocators.PASSWORD_INPUT
+            )
+        ).send_keys(EXISTING_USER_PASSWORD)
 
-        WebDriverWait(self.driver, 10).until(
-            expected_conditions.element_to_be_clickable(LOGIN_BUTTON)
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.element_to_be_clickable(
+                AuthLocators.LOGIN_BUTTON
+            )
         ).click()
 
-        WebDriverWait(self.driver, 10).until(
-            expected_conditions.visibility_of_element_located(USER_AVATAR)
-        )
-
-        WebDriverWait(self.driver, 10).until(
-            expected_conditions.visibility_of_element_located(USER_NAME)
-        )
-
-        actual_avatar_visible = self.driver.find_element(
-            *USER_AVATAR
+        assert WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.visibility_of_element_located(
+                AuthLocators.USER_AVATAR
+            )
         ).is_displayed()
-        expected_avatar_visible = True
 
-        assert actual_avatar_visible == expected_avatar_visible
-
-        actual_user_name = self.driver.find_element(*USER_NAME).text
-        expected_user_name = "User."
-
-        assert actual_user_name == expected_user_name
+        assert WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.visibility_of_element_located(
+                AuthLocators.USER_NAME
+            )
+        ).text == EXPECTED_USER_NAME

@@ -1,197 +1,232 @@
-from uuid import uuid4
-from selenium import webdriver
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 
-from locators import (
-    PLACE_ADVERTISEMENT_BUTTON,
-    AUTHORIZATION_REQUIRED_TITLE,
-    AUTH_BUTTON,
-    EMAIL_INPUT,
-    PASSWORD_INPUT,
-    LOGIN_BUTTON,
-    LOGOUT_BUTTON,
-    ADVERTISEMENT_NAME_INPUT,
-    ADVERTISEMENT_CATEGORY_ARROW,
-    ADVERTISEMENT_CATEGORY_BOOKS,
-    ADVERTISEMENT_CONDITION_USED_CONTROL,
-    ADVERTISEMENT_CONDITION_USED_ACTIVE,
-    ADVERTISEMENT_CITY_ARROW,
-    ADVERTISEMENT_CITY_MOSCOW,
-    ADVERTISEMENT_DESCRIPTION_INPUT,
-    ADVERTISEMENT_PRICE_INPUT,
-    PUBLISH_BUTTON,
-    MY_ADVERTISEMENTS_TITLE,
-    MY_ADVERTISEMENT_TITLES,
+from constants import BASE_URL, PROFILE_URL, WAIT_TIMEOUT
+from data import (
+    ADVERTISEMENT_USER_EMAIL,
+    ADVERTISEMENT_USER_PASSWORD,
+    ADVERTISEMENT_DESCRIPTION,
+    ADVERTISEMENT_PRICE,
+    generate_advertisement_name,
 )
-
-
-BASE_URL = "https://qa-desk.education-services.ru/"
-
-USER_EMAIL = "testbest@gmail.com"
-USER_PASSWORD = "22882288"
+from locators import AuthLocators, AdvertisementLocators
 
 
 class TestAdvertisement:
 
-    def setup_method(self):
-        self.driver = webdriver.Chrome()
-        self.driver.maximize_window()
+    def test_unauthorized_user_cannot_create_advertisement(self, driver):
+        driver.get(BASE_URL)
 
-    def teardown_method(self):
-        self.driver.quit()
-
-    def test_unauthorized_user_cannot_create_advertisement(self):
-        self.driver.get(BASE_URL)
-
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
             expected_conditions.element_to_be_clickable(
-                PLACE_ADVERTISEMENT_BUTTON
+                AdvertisementLocators.PLACE_ADVERTISEMENT_BUTTON
             )
         ).click()
 
-        actual_title = WebDriverWait(self.driver, 10).until(
+        assert WebDriverWait(driver, WAIT_TIMEOUT).until(
             expected_conditions.visibility_of_element_located(
-                AUTHORIZATION_REQUIRED_TITLE
+                AdvertisementLocators.AUTHORIZATION_REQUIRED_TITLE
             )
-        ).text
+        ).is_displayed()
 
-        expected_title = "Чтобы разместить объявление, авторизуйтесь"
+    def test_authorized_user_selects_used_condition(self, driver):
+        driver.get(BASE_URL)
 
-        assert actual_title == expected_title
-
-    def test_authorized_user_creates_advertisement(self):
-        advertisement_name = f"Автотестовая крутая книга {uuid4().hex[:8]}"
-        description = "Тестовое описание объявления"
-        price = "5555"
-
-        self.driver.get(BASE_URL)
-
-        WebDriverWait(self.driver, 10).until(
-            expected_conditions.element_to_be_clickable(AUTH_BUTTON)
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.element_to_be_clickable(
+                AuthLocators.AUTH_BUTTON
+            )
         ).click()
 
-        WebDriverWait(self.driver, 10).until(
-            expected_conditions.visibility_of_element_located(EMAIL_INPUT)
-        ).send_keys(USER_EMAIL)
-
-        WebDriverWait(self.driver, 10).until(
-            expected_conditions.visibility_of_element_located(PASSWORD_INPUT)
-        ).send_keys(USER_PASSWORD)
-
-        WebDriverWait(self.driver, 10).until(
-            expected_conditions.element_to_be_clickable(LOGIN_BUTTON)
-        ).click()
-
-
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
             expected_conditions.visibility_of_element_located(
-                LOGOUT_BUTTON
+                AuthLocators.EMAIL_INPUT
+            )
+        ).send_keys(ADVERTISEMENT_USER_EMAIL)
+
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.visibility_of_element_located(
+                AuthLocators.PASSWORD_INPUT
+            )
+        ).send_keys(ADVERTISEMENT_USER_PASSWORD)
+
+        login_button = WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.element_to_be_clickable(
+                AuthLocators.LOGIN_BUTTON
+            )
+        )
+        login_button.click()
+
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.invisibility_of_element_located(
+                AuthLocators.LOGIN_BUTTON
             )
         )
 
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.visibility_of_element_located(
+                AuthLocators.USER_AVATAR
+            )
+        )
+
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
             expected_conditions.element_to_be_clickable(
-                PLACE_ADVERTISEMENT_BUTTON
+                AdvertisementLocators.PLACE_ADVERTISEMENT_BUTTON
             )
         ).click()
 
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.element_to_be_clickable(
+                AdvertisementLocators.ADVERTISEMENT_CATEGORY_ARROW
+            )
+        ).click()
+
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.element_to_be_clickable(
+                AdvertisementLocators.ADVERTISEMENT_CATEGORY_BOOKS
+            )
+        ).click()
+
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.element_to_be_clickable(
+                AdvertisementLocators.ADVERTISEMENT_CONDITION_USED_CONTROL
+            )
+        ).click()
+
+        assert WebDriverWait(driver, WAIT_TIMEOUT).until(
             expected_conditions.visibility_of_element_located(
-                ADVERTISEMENT_NAME_INPUT
+                AdvertisementLocators.ADVERTISEMENT_CONDITION_USED_ACTIVE
+            )
+        ).is_displayed()
+
+    def test_authorized_user_creates_advertisement(self, driver):
+        advertisement_name = generate_advertisement_name()
+
+        driver.get(BASE_URL)
+
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.element_to_be_clickable(
+                AuthLocators.AUTH_BUTTON
+            )
+        ).click()
+
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.visibility_of_element_located(
+                AuthLocators.EMAIL_INPUT
+            )
+        ).send_keys(ADVERTISEMENT_USER_EMAIL)
+
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.visibility_of_element_located(
+                AuthLocators.PASSWORD_INPUT
+            )
+        ).send_keys(ADVERTISEMENT_USER_PASSWORD)
+
+        login_button = WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.element_to_be_clickable(
+                AuthLocators.LOGIN_BUTTON
+            )
+        )
+        login_button.click()
+
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.invisibility_of_element_located(
+                AuthLocators.LOGIN_BUTTON
+            )
+        )
+
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.visibility_of_element_located(
+                AuthLocators.USER_AVATAR
+            )
+        )
+
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.element_to_be_clickable(
+                AdvertisementLocators.PLACE_ADVERTISEMENT_BUTTON
+            )
+        ).click()
+
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.visibility_of_element_located(
+                AdvertisementLocators.ADVERTISEMENT_NAME_INPUT
             )
         ).send_keys(advertisement_name)
 
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
             expected_conditions.element_to_be_clickable(
-                ADVERTISEMENT_CATEGORY_ARROW
+                AdvertisementLocators.ADVERTISEMENT_CATEGORY_ARROW
             )
         ).click()
 
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
             expected_conditions.element_to_be_clickable(
-                ADVERTISEMENT_CATEGORY_BOOKS
+                AdvertisementLocators.ADVERTISEMENT_CATEGORY_BOOKS
             )
         ).click()
 
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
             expected_conditions.element_to_be_clickable(
-                ADVERTISEMENT_CONDITION_USED_CONTROL
+                AdvertisementLocators.ADVERTISEMENT_CONDITION_USED_CONTROL
             )
         ).click()
 
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
             expected_conditions.visibility_of_element_located(
-                ADVERTISEMENT_CONDITION_USED_ACTIVE
+                AdvertisementLocators.ADVERTISEMENT_CONDITION_USED_ACTIVE
             )
         )
 
-        actual_condition_selected = self.driver.find_element(
-            *ADVERTISEMENT_CONDITION_USED_ACTIVE
-        ).is_displayed()
-
-        expected_condition_selected = True
-
-        assert actual_condition_selected == expected_condition_selected
-
-
-
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
             expected_conditions.element_to_be_clickable(
-                ADVERTISEMENT_CITY_ARROW
+                AdvertisementLocators.ADVERTISEMENT_CITY_ARROW
             )
         ).click()
 
-
-        WebDriverWait(self.driver, 10).until(
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
             expected_conditions.element_to_be_clickable(
-                ADVERTISEMENT_CITY_MOSCOW
+                AdvertisementLocators.ADVERTISEMENT_CITY_MOSCOW
             )
         ).click()
 
-
-        description_elements = WebDriverWait(self.driver, 10).until(
-            expected_conditions.visibility_of_any_elements_located(
-                ADVERTISEMENT_DESCRIPTION_INPUT
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.text_to_be_present_in_element_value(
+                AdvertisementLocators.ADVERTISEMENT_CITY_DROPDOWN,
+                "Москва"
             )
         )
 
-        description_elements[0].send_keys(description)
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.element_to_be_clickable(
+                AdvertisementLocators.ADVERTISEMENT_DESCRIPTION_INPUT
+            )
+        ).send_keys(ADVERTISEMENT_DESCRIPTION)
 
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.element_to_be_clickable(
+                AdvertisementLocators.ADVERTISEMENT_PRICE_INPUT
+            )
+        ).send_keys(ADVERTISEMENT_PRICE)
 
-        price_elements = WebDriverWait(self.driver, 10).until(
-            expected_conditions.visibility_of_any_elements_located(
-                ADVERTISEMENT_PRICE_INPUT
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.text_to_be_present_in_element_value(
+                AdvertisementLocators.ADVERTISEMENT_PRICE_INPUT,
+                ADVERTISEMENT_PRICE
             )
         )
 
-        price_elements[0].send_keys(price)
-        WebDriverWait(self.driver, 10).until(
-            expected_conditions.element_to_be_clickable(PUBLISH_BUTTON)
+        WebDriverWait(driver, WAIT_TIMEOUT).until(
+            expected_conditions.element_to_be_clickable(
+                AdvertisementLocators.PUBLISH_BUTTON
+            )
         ).click()
 
-        self.driver.get(f"{BASE_URL}profile")
+        driver.get(PROFILE_URL)
 
-        WebDriverWait(self.driver, 10).until(
+        assert WebDriverWait(driver, WAIT_TIMEOUT).until(
             expected_conditions.visibility_of_element_located(
-                MY_ADVERTISEMENTS_TITLE
-            )
-        )
-
-        WebDriverWait(self.driver, 10).until(
-            lambda driver: advertisement_name in [
-                element.text.strip()
-                for element in driver.find_elements(
-                    *MY_ADVERTISEMENT_TITLES
+                AdvertisementLocators.advertisement_title(
+                    advertisement_name
                 )
-            ]
-        )
-
-        actual_advertisement_titles = [
-            element.text.strip()
-            for element in self.driver.find_elements(
-                *MY_ADVERTISEMENT_TITLES
             )
-        ]
-
-        assert advertisement_name in actual_advertisement_titles
+        ).is_displayed()

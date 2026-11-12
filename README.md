@@ -12,4 +12,4 @@ Google Chrome
 python -m pip install selenium pytest
 
 Запуск тестов
-python -m pytest
+python -m pytest -v
