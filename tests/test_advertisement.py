@@ -172,12 +172,6 @@ class TestAdvertisement:
         ).click()
 
         WebDriverWait(driver, WAIT_TIMEOUT).until(
-            expected_conditions.visibility_of_element_located(
-                AdvertisementLocators.ADVERTISEMENT_CONDITION_USED_ACTIVE
-            )
-        )
-
-        WebDriverWait(driver, WAIT_TIMEOUT).until(
             expected_conditions.element_to_be_clickable(
                 AdvertisementLocators.ADVERTISEMENT_CITY_ARROW
             )

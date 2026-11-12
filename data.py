@@ -5,7 +5,7 @@ EXISTING_USER_EMAIL = "testbest@gmail.com"
 EXISTING_USER_PASSWORD = "22882288"
 
 
-ADVERTISEMENT_USER_EMAIL = "testakyla@gmail.com"
+ADVERTISEMENT_USER_EMAIL = "fixedtest@gmail.com"
 ADVERTISEMENT_USER_PASSWORD = "qwerty123"
 
 
